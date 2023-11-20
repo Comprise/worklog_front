@@ -26,7 +26,7 @@ export function getDateTo() {
 export function getTime(durations) {
     const minutes = Math.floor(durations / 60) % 60;
     const hours = Math.floor(durations / 60 / 60);
-    return hours + ':' + minutes.toString().padStart(2, "0");
+    return hours + ":" + minutes.toString().padStart(2, "0");
 }
 
 export function getLogin(token) {

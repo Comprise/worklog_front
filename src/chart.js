@@ -2,14 +2,16 @@ import {Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip} f
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {getTime} from "./utils.js";
 import apiFetch from "./apiFetch.js";
+import {deleteWorklogData} from "./stores.js";
+import {get} from "svelte/store";
+
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
 
 let weekendsPluginConfig = {
-    id: 'weekends',
     beforeDatasetsDraw: (chart) => {
         const {ctx, chartArea: {top, height}, scales: {x}} = chart;
-        ctx.fillStyle = 'rgba(255,122,127,0.4)';
+        ctx.fillStyle = "rgba(255,122,127,0.4)";
         if (x._gridLineItems.length === chart.data.worklogData.weekends.length + 1) {
             chart.data.worklogData.weekends.filter((item, index) => {
                 if (item > 0) {
@@ -22,16 +24,60 @@ let weekendsPluginConfig = {
 }
 
 let redLinePluginConfig = {
-    id: 'redLine',
     beforeDraw: (chart) => {
         const {ctx, chartArea: {top, right, left}, scales: {y}} = chart;
         ctx.save();
-        ctx.strokeStyle = 'red';
+        ctx.strokeStyle = "red";
         const ticksIndex = y.ticks.findIndex(item => item.value === 28800);
         const newTop = y.getPixelForTick(ticksIndex);
         if (newTop > top) {
             ctx.strokeRect(left, y.getPixelForTick(ticksIndex), right, 0);
             ctx.restore();
+        }
+    }
+}
+
+let eventCatcher = {
+    beforeEvent(chart, args, pluginOptions) {
+        const event = args.event;
+
+        let menu = document.getElementById("contextMenu");
+        let deleteButton = document.getElementById("delete");
+
+        chart.canvas.addEventListener("contextmenu", handleContextMenu);
+        chart.canvas.addEventListener("mousedown", handleMouseDown);
+
+        function handleContextMenu(e){
+            e.preventDefault();
+
+            const points = chart.getElementsAtEventForMode(
+                event,
+                "nearest",
+                {intersect: true},
+                true);
+
+            if (points.length) {
+                const firstPoint = points[0];
+                const itemData = chart.data.worklogData.datasets[firstPoint.datasetIndex][firstPoint.index];
+
+                deleteWorklogData.set({
+                    "worklog": itemData.worklog,
+                    "issue": itemData.issue,
+                    "datasetIndex": firstPoint.datasetIndex,
+                    "index": firstPoint.index
+                });
+
+                menu.style.left = e.clientX + "px";
+                menu.style.top = e.clientY + "px";
+
+                deleteButton.textContent = `Удалить (${get(deleteWorklogData).worklog})`;
+            } else {
+                deleteWorklogData.set(null);
+            }
+        }
+
+        function handleMouseDown(e){
+            deleteWorklogData.set(null);
         }
     }
 }
@@ -64,7 +110,7 @@ let datalabelsOptionsPlugin = {
         const meta = context.chart.getDatasetMeta(context.datasetIndex).data[context.dataIndex];
         return context.dataset.data[context.dataIndex] > 0 && meta?.width > 30;
     },
-    textAlign: 'center',
+    textAlign: "center",
 }
 
 let pluginsOptions = {
@@ -86,7 +132,7 @@ let scalesOptions = {
         ticks: {
             stepSize: 3600,
             callback: function (value) {
-                return value / 3600 + ':00';
+                return value / 3600 + ":00";
             },
         }
     }
@@ -94,7 +140,7 @@ let scalesOptions = {
 
 let options = {
     maintainAspectRatio: false,
-    borderColor: 'white',
+    borderColor: "white",
     borderWidth: 0.5,
     borderRadius: {
         topLeft: 6,
@@ -110,6 +156,7 @@ let options = {
 let pluginsConfig = [
     weekendsPluginConfig,
     redLinePluginConfig,
+    eventCatcher,
     ChartDataLabels
 ]
 
@@ -121,6 +168,29 @@ export async function getWorklogData(dateFrom, dateTo) {
             if (res.ok) {
                 return data
             } else {
+                throw new Error(data.detail);
+            }
+        })
+}
+
+export async function delWorklog() {
+    let url = "/worklog";
+    let config = {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            "worklog": get(deleteWorklogData).worklog,
+            "issue": get(deleteWorklogData).issue
+        })
+    }
+    return await apiFetch(url, config)
+        .then(async res => {
+            if (res.ok) {
+                return true
+            } else {
+                let data = await res.json();
                 throw new Error(data.detail);
             }
         })
@@ -139,7 +209,7 @@ export function getChartData(worklogData) {
 
 function getConfig(data) {
     return {
-        type: 'bar',
+        type: "bar",
         plugins: pluginsConfig,
         options: options,
         data: data

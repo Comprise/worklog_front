@@ -3,8 +3,8 @@
     import {scale} from "svelte/transition";
     import {logout} from "../apiFetch.js";
     import {getDateFrom, getDateTo, getDeltaCheck, getTime} from "../utils.js";
-    import {getWorklogData, getChartData, getChart} from "../chart.js";
-    import {login} from "../stores.js";
+    import {getWorklogData, delWorklog, getChartData, getChart} from "../chart.js";
+    import {login, deleteWorklogData} from "../stores.js";
 
     let dateFrom;
     let dateTo;
@@ -20,6 +20,19 @@
         dateFrom = getDateFrom();
         dateTo = getDateTo();
         await build();
+    }
+
+    async function deleteWorklog() {
+        try {
+            await delWorklog();
+            delete chart.data.worklogData.datasets[$deleteWorklogData.datasetIndex][$deleteWorklogData.index];
+            let chartData = getChartData(chart.data.worklogData);
+            chart.data = chartData;
+            chart.update();
+        } catch (err) {
+            console.error(err);
+        }
+        deleteWorklogData.set(null);
     }
 
     async function build() {
@@ -90,6 +103,11 @@
     {#if error}
         <p style="position: absolute;">{error}</p>
     {/if}
+
+    <ul id="contextMenu" class="dropdown-menu" style="display: {$deleteWorklogData ? 'block' : 'none'}">
+        <li><button id="delete" class="dropdown-item" on:click={deleteWorklog}></button></li>
+    </ul>
+
     <canvas style:filter="{!buildStatus || error ? 'blur(5px)' : null}" bind:this={worklog}></canvas>
 </div>
 

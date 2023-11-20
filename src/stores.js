@@ -5,6 +5,7 @@ export const apiUrl = readable(import.meta.env.VITE_API_URL);
 export const login = writable(getLogin(localStorage.getItem("accessToken")));
 export const accessToken = writable(localStorage.getItem("accessToken") ?? null);
 export const refreshToken = writable(localStorage.getItem("refreshToken") ?? null);
+export const deleteWorklogData = writable(null);
 
 accessToken.subscribe((value) => {
     if (value) return localStorage.setItem("accessToken", value);

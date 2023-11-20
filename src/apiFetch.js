@@ -13,13 +13,13 @@ async function originalRequest(path, config) {
 }
 
 async function tokenRefresh() {
-    let url = get(apiUrl) + '/auth/refresh'
+    let url = get(apiUrl) + "/auth/refresh"
     return await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json"
         },
-        body: JSON.stringify({'refresh': get(refreshToken)})
+        body: JSON.stringify({"refresh": get(refreshToken)})
     })
         .then(async res => {
             let data = await res.json();
