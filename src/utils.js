@@ -1,4 +1,6 @@
 import jwtDecode from "jwt-decode";
+import {get} from "svelte/store";
+import {period} from "./stores.js";
 
 export function getDeltaCheck(dateFrom, dateTo) {
     if (dateFrom && dateTo) {
@@ -14,7 +16,7 @@ export function dateToString(date) {
 
 export function getDateFrom() {
     let dateToday = new Date();
-    let dateFrom = new Date(dateToday.setDate(dateToday.getDate() - 7));
+    let dateFrom = new Date(dateToday.setDate(dateToday.getDate() - get(period)));
     return dateToString(dateFrom);
 }
 
@@ -32,9 +34,30 @@ export function getTime(durations) {
 export function getLogin(token) {
     try {
         let jwtData = jwtDecode(token);
-        return jwtData?.login
-    } catch (err) {
-        return "unknown"
+        return jwtData.login
+    } catch {
+        return null
     }
+}
 
+export function getPeriod(value) {
+    if (isFinite(value)) {
+        if (value > 31) {
+            return 31;
+        } else if (value < 0) {
+            return 7;
+        } else {
+            return value;
+        }
+    } else {
+        return 7;
+    }
+}
+
+export function setPeriod(dateFrom, dateTo) {
+    if (dateFrom && dateTo) {
+        let deltaSecond = new Date(dateTo) - new Date(dateFrom);
+        let deltaDay = deltaSecond / 1000 / 60 / 60 / 24;
+        period.set(deltaDay);
+    }
 }

@@ -1,5 +1,6 @@
-import {apiUrl, accessToken, refreshToken} from "./stores.js";
+import {apiUrl, accessToken, refreshToken, login} from "./stores.js";
 import {get} from "svelte/store";
+import {getLogin} from "./utils.js";
 
 export async function logout() {
     accessToken.set(null);
@@ -25,6 +26,7 @@ async function tokenRefresh() {
             let data = await res.json();
             if (res.ok) {
                 accessToken.set(data.access);
+                login.set(getLogin(get(accessToken)));
                 refreshToken.set(data.refresh);
             } else if (res.status === 400) await logout()
             else {

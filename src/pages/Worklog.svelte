@@ -2,9 +2,9 @@
     import {onMount} from "svelte";
     import {scale} from "svelte/transition";
     import {logout} from "../apiFetch.js";
-    import {getDateFrom, getDateTo, getDeltaCheck, getTime} from "../utils.js";
+    import {getDateFrom, getDateTo, getDeltaCheck, getTime, setPeriod} from "../utils.js";
     import {getWorklogData, delWorklog, getChartData, getChart} from "../chart.js";
-    import {login, worklogData} from "../stores.js";
+    import {login, worklogData, period} from "../stores.js";
 
     let dateFrom;
     let dateTo;
@@ -16,10 +16,15 @@
 
     $: deltaCheck = getDeltaCheck(dateFrom, dateTo);
 
-    async function reset() {
+    async function start() {
         dateFrom = getDateFrom();
         dateTo = getDateTo();
         await build();
+    }
+
+    async function reset() {
+        $period = 7;
+        await start();
     }
 
     async function deleteWorklog() {
@@ -38,6 +43,7 @@
         error = null;
         buildStatus = false;
         try {
+            setPeriod(dateFrom, dateTo);
             let worklogData = await getWorklogData(dateFrom, dateTo);
             totalDuration = worklogData.total_duration ? getTime(worklogData.total_duration) : 0;
             let chartData = getChartData(worklogData);
@@ -56,7 +62,7 @@
     }
 
     onMount(async () => {
-        await reset();
+        await start();
     });
 
 </script>
@@ -64,7 +70,8 @@
 <nav class="navbar navbar-dark navbar-expand-lg bg-dark" data-bs-theme="dark">
     <div class="container-fluid">
         <div class="dropdown">
-            <button id="userMenu" class="btn btn-warning " data-bs-toggle="dropdown">
+            <button id="userMenu" class="btn btn-warning " data-bs-toggle="dropdown"
+                    style="display: {$login ? 'block' : 'none'}">
                 {$login}
             </button>
             <ul class="dropdown-menu">
@@ -118,7 +125,9 @@
                 ID: {$worklogData?.worklog}
             </button>
             <ul id="worklogDropMenu" class="dropdown-menu dropdown-menu-end">
-                <li><button id="delete" class="dropdown-item" on:click={deleteWorklog}>Удалить</button></li>
+                <li>
+                    <button id="delete" class="dropdown-item" on:click={deleteWorklog}>Удалить</button>
+                </li>
             </ul>
         </div>
     </div>
