@@ -4,7 +4,7 @@
     import {logout} from "../apiFetch.js";
     import {getDateFrom, getDateTo, getDeltaCheck, getTime} from "../utils.js";
     import {getWorklogData, delWorklog, getChartData, getChart} from "../chart.js";
-    import {login, deleteWorklogData} from "../stores.js";
+    import {login, worklogData} from "../stores.js";
 
     let dateFrom;
     let dateTo;
@@ -25,14 +25,13 @@
     async function deleteWorklog() {
         try {
             await delWorklog();
-            delete chart.data.worklogData.datasets[$deleteWorklogData.datasetIndex][$deleteWorklogData.index];
-            let chartData = getChartData(chart.data.worklogData);
-            chart.data = chartData;
+            delete chart.data.datasets[$worklogData.datasetIndex].data[$worklogData.index];
+            delete chart.data.datasets[$worklogData.datasetIndex].backgroundColor[$worklogData.index];
             chart.update();
+            worklogData.set(null);
         } catch (err) {
             console.error(err);
         }
-        deleteWorklogData.set(null);
     }
 
     async function build() {
@@ -69,7 +68,9 @@
                 {$login}
             </button>
             <ul class="dropdown-menu">
-                <li><button class="dropdown-item" on:click={logout}>Выйти</button></li>
+                <li>
+                    <button class="dropdown-item" on:click={logout}>Выйти</button>
+                </li>
             </ul>
         </div>
         <button class="navbar-toggler" data-bs-toggle="collapse"
@@ -103,11 +104,6 @@
     {#if error}
         <p style="position: absolute;">{error}</p>
     {/if}
-
-    <ul id="contextMenu" class="dropdown-menu" style="display: {$deleteWorklogData ? 'block' : 'none'}">
-        <li><button id="delete" class="dropdown-item" on:click={deleteWorklog}></button></li>
-    </ul>
-
     <canvas style:filter="{!buildStatus || error ? 'blur(5px)' : null}" bind:this={worklog}></canvas>
 </div>
 
@@ -116,6 +112,15 @@
         {#if totalDuration}
             <span class="text-light">Всего за период: {totalDuration}</span>
         {/if}
+        <div>
+            <button id="worklogMenu" class="btn btn-light" data-bs-toggle="dropdown"
+                    style="display: {$worklogData ? 'block' : 'none'}">
+                ID: {$worklogData?.worklog}
+            </button>
+            <ul id="worklogDropMenu" class="dropdown-menu dropdown-menu-end">
+                <li><button id="delete" class="dropdown-item" on:click={deleteWorklog}>Удалить</button></li>
+            </ul>
+        </div>
     </div>
 </footer>
 

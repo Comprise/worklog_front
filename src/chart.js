@@ -2,7 +2,7 @@ import {Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip} f
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {getTime} from "./utils.js";
 import apiFetch from "./apiFetch.js";
-import {deleteWorklogData} from "./stores.js";
+import {worklogData} from "./stores.js";
 import {get} from "svelte/store";
 
 
@@ -40,44 +40,19 @@ let redLinePluginConfig = {
 let eventCatcher = {
     beforeEvent(chart, args, pluginOptions) {
         const event = args.event;
-
-        let menu = document.getElementById("contextMenu");
-        let deleteButton = document.getElementById("delete");
-
-        chart.canvas.addEventListener("contextmenu", handleContextMenu);
-        chart.canvas.addEventListener("mousedown", handleMouseDown);
-
-        function handleContextMenu(e){
-            e.preventDefault();
-
-            const points = chart.getElementsAtEventForMode(
-                event,
-                "nearest",
-                {intersect: true},
-                true);
-
+        if (event.type === "click") {
+            const points = chart.getElementsAtEventForMode(event, "nearest", {intersect: true}, true);
             if (points.length) {
                 const firstPoint = points[0];
                 const itemData = chart.data.worklogData.datasets[firstPoint.datasetIndex][firstPoint.index];
 
-                deleteWorklogData.set({
+                worklogData.set({
                     "worklog": itemData.worklog,
                     "issue": itemData.issue,
                     "datasetIndex": firstPoint.datasetIndex,
-                    "index": firstPoint.index
+                    "index": firstPoint.index,
                 });
-
-                menu.style.left = e.clientX + "px";
-                menu.style.top = e.clientY + "px";
-
-                deleteButton.textContent = `Удалить (${get(deleteWorklogData).worklog})`;
-            } else {
-                deleteWorklogData.set(null);
             }
-        }
-
-        function handleMouseDown(e){
-            deleteWorklogData.set(null);
         }
     }
 }
@@ -181,8 +156,8 @@ export async function delWorklog() {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            "worklog": get(deleteWorklogData).worklog,
-            "issue": get(deleteWorklogData).issue
+            "worklog": get(worklogData).worklog,
+            "issue": get(worklogData).issue
         })
     }
     return await apiFetch(url, config)
