@@ -44,7 +44,7 @@ export function getPeriod(value) {
     if (isFinite(value)) {
         if (value > 31) {
             return 31;
-        } else if (value < 0) {
+        } else if (value <= 0) {
             return 7;
         } else {
             return value;
