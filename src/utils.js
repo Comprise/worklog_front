@@ -1,4 +1,4 @@
-import jwtDecode from "jwt-decode";
+import {jwtDecode} from "jwt-decode";
 import {get} from "svelte/store";
 import {period} from "./stores.js";
 
