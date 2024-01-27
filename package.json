@@ -9,14 +9,14 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^3.0.1",
-    "svelte": "^4.2.9",
-    "vite": "^5.0.12",
-    "page": "^1.11.6",
-    "qs": "^6.11.2",
-    "chart.js": "^4.4.1",
-    "chartjs-plugin-datalabels": "^2.2.0",
-    "bootstrap": "^5.3.2",
-    "jwt-decode": "^4.0.0"
+    "@sveltejs/vite-plugin-svelte": "^3",
+    "svelte": "^4",
+    "vite": "^5",
+    "page": "^1",
+    "qs": "^6",
+    "chart.js": "^4",
+    "chartjs-plugin-datalabels": "^2",
+    "bootstrap": "^5",
+    "jwt-decode": "^4"
   }
 }
