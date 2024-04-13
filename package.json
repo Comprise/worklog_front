@@ -9,12 +9,12 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^3.0.2",
-    "svelte": "^4.2.12",
-    "vite": "^5.1.4",
+    "@sveltejs/vite-plugin-svelte": "^3.1.0",
+    "svelte": "^4.2.14",
+    "vite": "^5.2.8",
     "page": "^1.11.6",
-    "qs": "^6.11.2",
-    "chart.js": "^4.4.1",
+    "qs": "^6.12.1",
+    "chart.js": "^4.4.2",
     "chartjs-plugin-datalabels": "^2.2.0",
     "bootstrap": "^5.3.3",
     "jwt-decode": "^4.0.0"
